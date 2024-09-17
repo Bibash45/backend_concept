@@ -1,28 +1,36 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-const bodyParser = require("body-parser");
+const bodyParser = require("body-parser"); // Optional: Can use express.json() instead
 const mongoose = require("mongoose");
 require("dotenv").config();
 
 const app = express();
 
 // connect to db
-require('./db/databaseConnection')
+require('./db/databaseConnection');
 
 // import routes
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/auth.js");
 
 // app middlewares
 app.use(morgan("dev"));
-app.use(bodyParser.json());
+app.use(express.json()); // Alternative to body-parser
 // app.use(cors()); // allows all origins
-if ((process.env.NODE_ENV = "development")) {
+
+// Conditional CORS setup
+if (process.env.NODE_ENV === "development") {
   app.use(cors({ origin: `http://localhost:3000` }));
 }
 
 // middleware
 app.use("/api", authRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 const port = process.env.PORT || 8000;
 
