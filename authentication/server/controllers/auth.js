@@ -82,8 +82,17 @@ exports.accountActivation = async (req, res) => {
 
       await user.save();
 
+      // Generate a new JWT for the user (for future actions)
+      const newToken = jwt.sign(
+        { _id: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" } // Token valid for 7 days
+      );
+      
       return res.json({
         message: "Signup success. Please signin.",
+        token: newToken, // Return the new token
+        user: { name: user.name, email: user.email }, // Return user data
       });
     } catch (err) {
       console.log("JWT VERIFY IN ACCOUNT ACTIVATION ERROR", err);

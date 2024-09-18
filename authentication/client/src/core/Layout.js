@@ -1,23 +1,74 @@
 import React, { Fragment } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { isAuth, signout } from "../auth/helpers";
 
 const Layout = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => {
+    return location.pathname === path ? { color: "#000", fontWeight: '600' } : { color: "#fff" };
+  };
+
   const nav = () => {
+    const auth = isAuth();
+
     return (
       <ul className="nav nav-tabs bg-primary">
-        <li className="nav-item ">
-          <Link to="/" className="text-light nav-link">
+        <li className="nav-item">
+          <Link to="/" className="nav-link" style={isActive("/")}>
             Home
           </Link>
         </li>
-        <li className="nav-item ">
-          <Link to="/signup" className="text-light nav-link">
-            Signup
-          </Link>
-        </li>
+
+        {auth && (
+          <li className="nav-item">
+            <Link className="nav-link text-light" style={isActive("/")}>
+              {auth.name}
+            </Link>
+          </li>
+        )}
+
+        {!auth ? (
+          <>
+            <li className="nav-item">
+              <Link
+                to="/signin"
+                className="nav-link"
+                style={isActive("/signin")}
+              >
+                Signin
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/signup"
+                className="nav-link"
+                style={isActive("/signup")}
+              >
+                Signup
+              </Link>
+            </li>
+          </>
+        ) : (
+          <li className="nav-item">
+            <Link
+              onClick={() => {
+                signout(() => {
+                  navigate("/");
+                });
+              }}
+              className="nav-link btn btn-link text-light"
+              style={isActive("/")}
+            >
+              Signout
+            </Link>
+          </li>
+        )}
       </ul>
     );
   };
+
   return (
     <Fragment>
       {nav()}

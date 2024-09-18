@@ -1,30 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
-import { isAuth } from "./helpers";
+import { authenticate, isAuth } from "./helpers";
 
-const Signup = () => {
+const Signin = () => {
   const navigate = useNavigate();
   const [value, setValue] = useState({
-    name: "dipen",
     email: "bibashchaudhary850@gmail.com",
     password: "bibash",
     buttonText: "Submit",
   });
 
-  const { name, email, password, buttonText } = value;
-
-  // Redirect if the user is already authenticated
-  useEffect(() => {
-    if (isAuth()) {
-      navigate("/");
-    }
-  }, [navigate]);
+  const { email, password } = value;
 
   const handleChange = (name) => (e) => {
-    setValue({ ...value, [name]: e.target.value });
+    const { name, value } = e.target;
+    setValue((prevValue) => ({
+      ...prevValue,
+      [name]: value,
+    }));
+    console.log(value);
   };
 
   const clickSubmit = (e) => {
@@ -32,43 +29,37 @@ const Signup = () => {
     setValue({ ...value, buttonText: "Submitting" });
     axios({
       method: "POST",
-      url: `${process.env.REACT_APP_API}/signup`,
-      data: { name, email, password },
+      url: `${process.env.REACT_APP_API}/signin`,
+      data: { email, password },
     })
       .then((response) => {
         console.log("SIGNUP SUCCESS");
-        setValue({
-          ...value,
-          name: "",
-          email: "",
-          password: "",
-          buttonText: "Submitted",
+
+        // save the response (user,token) Localtorage/cookie\
+        authenticate(response, () => {
+          setValue({
+            ...value,
+            email: "",
+            password: "",
+            buttonText: "Submitted",
+          });
+          toast.success(`Hey ${response.data.user.name}, Welcome back!`);
         });
-        toast.success(response.data.message);
+
+        // redirect to a home
+        if (isAuth()) {
+          navigate("/");
+        }
       })
       .catch((err) => {
-        console.log("SIGNUP ERROR", err.response.data);
+        console.log("SIGNIN ERROR", err.response.data);
         setValue({ ...value, buttonText: "Submit" });
         toast.error(err.response.data.error);
       });
   };
 
-  const signupForm = () => (
+  const signinForm = () => (
     <form>
-      <div className="form-group mb-2">
-        <label htmlFor="name" className="text-muted">
-          Name:
-        </label>
-        <input
-          type="text"
-          className="form-control"
-          id="name"
-          name="name"
-          placeholder="Enter name"
-          value={name}
-          onChange={handleChange("name")}
-        />
-      </div>
       <div className="form-group mb-2">
         <label htmlFor="email" className="text-muted">
           Email:
@@ -79,7 +70,7 @@ const Signup = () => {
           id="email"
           name="email"
           placeholder="Enter email"
-          value={email}
+          value={value.email}
           onChange={handleChange("email")}
         />
       </div>
@@ -93,13 +84,13 @@ const Signup = () => {
           id="password"
           name="password"
           placeholder="Enter password"
-          value={password}
+          value={value.password}
           onChange={handleChange("password")}
         />
       </div>
       <div>
         <button className="btn btn-primary" onClick={clickSubmit}>
-          {buttonText}
+          {value.buttonText}
         </button>
       </div>
     </form>
@@ -108,10 +99,10 @@ const Signup = () => {
   return (
     <div className="col-d-6 offset-md-3">
       <ToastContainer />
-      <h1 className="p-5">Signup</h1>
-      {signupForm()}
+      <h1 className="p-5">Signin</h1>
+      {signinForm()}
     </div>
   );
 };
 
-export default Signup;
+export default Signin;

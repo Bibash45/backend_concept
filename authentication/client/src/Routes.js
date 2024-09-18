@@ -10,21 +10,31 @@ import Layout from "./core/Layout";
 import Home from "./core/Home";
 import Error from "./components/Error";
 import Signup from "./auth/Signup";
+import Signin from "./auth/Signin";
+import Activate from "./auth/Activate";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
-    errorElement:<Error />,
+    errorElement: <Error />,
     children: [
       {
         index: true,
         element: <Home />,
       },
       {
-        path:"/signup",
-        element:<Signup />
-      }
+        path: "/signup",
+        element: <Signup />,
+      },
+      {
+        path: "/signin",
+        element: <Signin />,
+      },
+      {
+        path: "/auth/activate/:token",
+        element: <Activate />,
+      },
     ],
   },
 ]);
