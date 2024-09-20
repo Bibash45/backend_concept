@@ -7,7 +7,9 @@ const Layout = () => {
   const location = useLocation();
 
   const isActive = (path) => {
-    return location.pathname === path ? { color: "#000", fontWeight: '600' } : { color: "#fff" };
+    return location.pathname === path
+      ? { color: "#000", fontWeight: "600" }
+      : { color: "#fff" };
   };
 
   const nav = () => {
@@ -21,9 +23,24 @@ const Layout = () => {
           </Link>
         </li>
 
-        {auth && (
+        {auth && auth.role === "admin" && (
           <li className="nav-item">
-            <Link className="nav-link text-light" style={isActive("/")}>
+            <Link
+              to="/admin"
+              className="nav-link text-"
+              style={isActive("/admin")}
+            >
+              {auth.name}
+            </Link>
+          </li>
+        )}
+        {auth && auth.role === "subscriber" && (
+          <li className="nav-item">
+            <Link
+              to="/private"
+              className="nav-link text-"
+              style={isActive("/private")}
+            >
               {auth.name}
             </Link>
           </li>

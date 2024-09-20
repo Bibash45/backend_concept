@@ -12,6 +12,10 @@ import Error from "./components/Error";
 import Signup from "./auth/Signup";
 import Signin from "./auth/Signin";
 import Activate from "./auth/Activate";
+import Private from "./core/Private";
+import PrivateRoute from "./auth/PrivateRoute";
+import AdminRoute from "./auth/AdminRoute";
+import Admin from "./core/Admin";
 
 const router = createBrowserRouter([
   {
@@ -24,16 +28,36 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/signup",
+        path: "signup",
         element: <Signup />,
       },
       {
-        path: "/signin",
+        path: "signin",
         element: <Signin />,
       },
       {
-        path: "/auth/activate/:token",
+        path: "auth/activate/:token",
         element: <Activate />,
+      },
+      {
+        path: "private",
+        element: <PrivateRoute />,
+        children: [
+          {
+            index: true,
+            element: <Private />,
+          },
+        ],
+      },
+      {
+        path: "admin",
+        element: <AdminRoute />,
+        children: [
+          {
+            index: true,
+            element: <Admin />,
+          },
+        ],
       },
     ],
   },

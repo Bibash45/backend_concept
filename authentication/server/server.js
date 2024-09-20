@@ -12,6 +12,7 @@ require('./db/databaseConnection');
 
 // import routes
 const authRoutes = require("./routes/auth.js");
+const userRoutes = require("./routes/user.js");
 
 // app middlewares
 app.use(morgan("dev"));
@@ -25,6 +26,7 @@ if (process.env.NODE_ENV === "development") {
 
 // middleware
 app.use("/api", authRoutes);
+app.use("/api", userRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

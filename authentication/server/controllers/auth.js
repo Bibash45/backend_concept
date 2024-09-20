@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { expressjwt } = require("express-jwt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
@@ -88,7 +89,7 @@ exports.accountActivation = async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: "7d" } // Token valid for 7 days
       );
-      
+
       return res.json({
         message: "Signup success. Please signin.",
         token: newToken, // Return the new token
@@ -137,3 +138,10 @@ exports.signin = async (req, res) => {
     },
   });
 };
+
+// protecting the read profile api endpoints
+exports.requireSignin = expressjwt({
+  secret: process.env.JWT_SECRET,
+  algorithms: ["HS256"],
+  requestProperty: "auth",
+});

@@ -44,12 +44,13 @@ const Signin = () => {
             buttonText: "Submitted",
           });
           toast.success(`Hey ${response.data.user.name}, Welcome back!`);
-        });
 
-        // redirect to a home
-        if (isAuth()) {
-          navigate("/");
-        }
+          if (isAuth() && isAuth()?.role === "admin") {
+            navigate("/admin");
+          }else{
+            navigate("/private");
+          }
+        });
       })
       .catch((err) => {
         console.log("SIGNIN ERROR", err.response.data);
