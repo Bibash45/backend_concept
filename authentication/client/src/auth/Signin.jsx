@@ -8,8 +8,8 @@ import { authenticate, isAuth } from "./helpers";
 const Signin = () => {
   const navigate = useNavigate();
   const [value, setValue] = useState({
-    email: "bibashchaudhary850@gmail.com",
-    password: "bibash",
+    email: "dipendraacharya132@gmail.com",
+    password: "dipenn",
     buttonText: "Submit",
   });
 

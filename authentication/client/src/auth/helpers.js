@@ -20,7 +20,7 @@ export const removeCookie = (key) => {
 
 // get from cookie such as stored token
 // will be useful when we need make request to server from token
-export const getCookie = (key, value) => {
+export const getCookie = (key) => {
   if (window != "undefined") {
     return cookie.get(key);
   }
@@ -65,8 +65,20 @@ export const isAuth = () => {
 
 // signout
 export const signout = (next) => {
-    console.log("SIGNOUT HELPER");
-    removeCookie("token");
-    removeLocalStorage("user");
+  console.log("SIGNOUT HELPER");
+  removeCookie("token");
+  removeLocalStorage("user");
+  next();
+};
+
+export const updateUser = (response, next) => {
+  console.log("UPDATE USER IN LOCAL STORAGE HELPERS");
+  if (typeof window != "undefined") {
+    let auth = JSON.parse(localStorage.getItem("user"));
+    auth.name = response.data.name;
+    auth.password = response.data.password;
+
+    setLocalStorage("user", auth);
     next();
+  }
 };
