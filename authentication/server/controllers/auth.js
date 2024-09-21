@@ -163,3 +163,96 @@ exports.adminMiddleware = (req, res, next) => {
     next();
   });
 };
+
+// forgot password controller
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        error: "User with this email does not exist",
+      });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_RESET_PASSWORD, {
+      expiresIn: "10m",
+    });
+
+    await user.updateOne({ resetPasswordLink: token });
+
+    // Email data
+    const mailOptions = {
+      from: "bibashcdry46@gmail.com",
+      to: email,
+      subject: "Reset your password ✔",
+      text: `Hello world? --- ${token}`,
+      html: `
+        <h1>Please use the following link to reset your password</h1>
+        <a href="${process.env.CLIENT_URL}/auth/password/reset/${token}">${process.env.CLIENT_URL}/auth/password/reset/${token}</a>
+        <hr />
+        <p>This email may contain sensitive information</p>
+        <p>${process.env.CLIENT_URL}</p>
+      `,
+    };
+
+    // Send email using Nodemailer
+    await transporter.sendMail(mailOptions);
+
+    return res.json({
+      message: `Email has been sent to ${email}. Follow the instructions to reset your password.`,
+    });
+  } catch (err) {
+    console.log("FORGOT PASSWORD ERROR", err);
+    return res.status(400).json({
+      error: "An error occurred while processing your request.",
+    });
+  }
+};
+
+// reset password controller
+exports.resetPassword = async (req, res) => {
+  console.log(req.body);
+
+  const { resetPasswordLink, newPassword } = req.body;
+
+  if (resetPasswordLink) {
+    try {
+      const decoded = jwt.verify(
+        resetPasswordLink,
+        process.env.JWT_RESET_PASSWORD
+      );
+      if (!decoded) {
+        return res.status(400).json({
+          error: "Invalid reset password link",
+        });
+      }
+
+      let user = await User.findOne({ resetPasswordLink });
+      if (!user) {
+        return res.status(400).json({
+          error: "Invalid link",
+        });
+      }
+
+      user.password = newPassword;
+      user.resetPasswordLink = "";
+      await user.save();
+
+      return res.json({
+        message: "Password has been updated",
+      });
+    } catch (err) {
+      console.log("RESET PASSWORD ERROR", err);
+      return res.status(400).json({
+        error: "Expired link. Try again",
+      });
+    }
+  } else {
+    return res.status(400).json({
+      error: "No link provided",
+    });
+  }
+};
