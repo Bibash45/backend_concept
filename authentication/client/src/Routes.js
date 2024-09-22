@@ -16,7 +16,8 @@ import Private from "./core/Private";
 import PrivateRoute from "./auth/PrivateRoute";
 import AdminRoute from "./auth/AdminRoute";
 import Admin from "./core/Admin";
-
+import Forgot from "./auth/Forgot";
+import Reset from "./auth/Reset";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -38,6 +39,14 @@ const router = createBrowserRouter([
       {
         path: "auth/activate/:token",
         element: <Activate />,
+      },
+      {
+        path: "auth/password/forgot",
+        element: <Forgot />,
+      },
+      {
+        path: "auth/password/reset/:token",
+        element: <Reset />,
       },
       {
         path: "private",

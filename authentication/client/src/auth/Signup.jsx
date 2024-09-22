@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -110,6 +110,8 @@ const Signup = () => {
       <ToastContainer />
       <h1 className="p-5">Signup</h1>
       {signupForm()}
+      <br />
+      <Link to="/auth/password/forgot" className="btn btn-sm btn-outline-danger">Forgot password</Link>
     </div>
   );
 };
