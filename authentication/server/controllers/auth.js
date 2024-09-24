@@ -2,6 +2,7 @@ const User = require("../models/user");
 const { expressjwt } = require("express-jwt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const { OAuth2Client } = require("google-auth-library");
 
 // Nodemailer transporter configuration (using Mailtrap for testing)
 const transporter = nodemailer.createTransport({
@@ -178,7 +179,7 @@ exports.forgotPassword = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { _id: user._id, name: user.name},
+      { _id: user._id, name: user.name },
       process.env.JWT_RESET_PASSWORD,
       {
         expiresIn: "10m",
@@ -257,6 +258,87 @@ exports.resetPassword = async (req, res) => {
   } else {
     return res.status(400).json({
       error: "No link provided",
+    });
+  }
+};
+
+// google login
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+exports.googleLogin = async (req, res) => {
+  const { idToken } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload(); // Retrieve the payload
+
+    // Ensure payload is defined before destructuring
+    if (!payload) {
+      return res.status(400).json({
+        error: "Google login failed. No payload received.",
+      });
+    }
+
+    const { email_verified, email, name } = payload; // Destructure from payload
+
+    if (email_verified) {
+      const user = await User.findOne({ email });
+
+      if (user) {
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        const { _id, role } = user; // Get role separately to avoid accessing before initialization
+        return res.json({
+          token,
+          user: {
+            _id,
+            email,
+            name,
+            role,
+          },
+        });
+      } else {
+        let password = email + process.env.JWT_SECRET;
+        const newUser = new User({
+          name,
+          email,
+          password,
+        });
+
+        const savedUser = await newUser.save();
+
+        const token = jwt.sign(
+          { _id: savedUser._id },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: "7d",
+          }
+        );
+        const { _id, role } = savedUser; // Get role separately to avoid accessing before initialization
+        return res.json({
+          token,
+          user: {
+            _id,
+            email,
+            name,
+            role,
+          },
+        });
+      }
+    } else {
+      return res.status(400).json({
+        error: "Google login failed. Email not verified.",
+      });
+    }
+  } catch (err) {
+    console.log("ERROR GOOGLE LOGIN", err);
+    return res.status(400).json({
+      error: "Failed to authenticate user",
     });
   }
 };

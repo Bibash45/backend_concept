@@ -9,6 +9,7 @@ const {
   signin,
   resetPassword,
   forgotPassword,
+  googleLogin,
 } = require("../controllers/auth");
 
 // import validator
@@ -38,5 +39,8 @@ router.put(
   resetPasswordValidator,
   runValidation,
   resetPassword
-),
-  (module.exports = router);
+);
+
+router.post("/google-login", googleLogin);
+
+module.exports = router;
